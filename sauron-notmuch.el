@@ -64,6 +64,39 @@
     (setq sauron-notmuch-running nil)))
 
 
+(defun sauron-notmuch-check-unread-messages ()
+  "Check our mail dir for 'new' messages and return the count."
+  (let ((cmd (format "notmuch search %s | wc -l" sauron-notmuch-unread-filter)))
+	(string-to-number (replace-regexp-in-string "![0-9]" "" (shell-command-to-string cmd)))
+	))
+
+(defun sauron-notmuch-check-important-messages()
+  "Check our mail dir for 'new' messages and return the count."
+  (if sauron-notmuch-important-filter
+      (let ((cmd (format "notmuch search (%s) and (%s)| wc -l"
+			 sauron-notmuch-unread-filter
+			 sauron-notmuch-important-filter)))
+        (string-to-number (replace-regexp-in-string "![0-9]" "" (shell-command-to-string cmd)))
+        )
+    0))
+
+(defun sauron-notmuch-new-mail-notification ()
+  "New mail notification routine for Sauron."
+  (let ((unread (sauron-notmuch-check-unread-messages))
+        (nb_important (sauron-notmuch-check-important-messages)))
+    (if (> nb_important 0)
+        (sauron-add-event
+         'notmuch 6
+         (format "You have %i unread messages including %i importants" unread nb_important))
+
+      ;; If nothing important, still validate the number of of total messages
+      (if (> unread 0)
+          (sauron-add-event
+           'notmuch 3
+           (format "You have %i unread messages" unread)))
+
+        )))
+
 (provide 'sauron-notmuch)
 
 ;;; sauron-notmuch.el ends here
