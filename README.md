@@ -17,7 +17,7 @@ For now, it is assuming that you have a function calling the hook. A minimal exa
     "Poll and update the index."
     (interactive)
     (notmuch-poll)
-    (run-hook-with-args notmuch-index-updated-hook))
+    (run-hooks 'notmuch-index-updated-hook))
 ```
 
 ### use-package (not available on melpa or anything like that yet !)
